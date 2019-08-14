@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.qyy.blog.blogservice.dao.CategoryDao">
+
+
+    <resultMap id="baseMap" type="com.qyy.blog.blogfacade.entity.BlogCategory">
+        <id property="categoryId" column="category_id" jdbcType="INTEGER"/>
+        <result property="categoryName" column="category_name" jdbcType="VARCHAR"/>
+        <result property="categoryIcon" column="category_icon" jdbcType="VARCHAR"/>
+        <result property="categoryRank" column="category_rank" jdbcType="INTEGER"/>
+        <result property="isDeleted" column="is_deleted" jdbcType="TINYINT"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="base_column_list">
+        category_id,category_name,category_icon,category_rank,is_deleted,create_time
+    </sql>
+
+    <select id="getTotalCategories" resultType="int" >
+        SELECT COUNT(1) FROM tb_blog_category where is_deleted=0
+    </select>
+
+    <select id="getCategoriesByPage" parameterType="Map" resultMap="baseMap">
+        select
+        <include refid="base_column_list"/>
+        from tb_blog_category
+        where is_deleted=0
+        order by category_rank desc,create_time desc
+        <if test="start!=null and limit!=null">
+            limit #{start},#{limit}
+        </if>
+    </select>
+
+    <select id="getAllCategories" resultMap="baseMap">
+        SELECT
+        <include refid="base_column_list"/>
+        FROM tb_blog_category
+        where 1=1 and
+        is_deleted = 0
+        order by category_rank desc,create_time desc
+        <if test="start!=null and limit!=null">
+            limit #{start},#{limit}
+        </if>
+    </select>
+
+    <select id="selectCategoryById" resultMap="baseMap">
+        select
+        <include refid="base_column_list"/>
+        from tb_blog_category
+        where 1=1
+        and is_deleted = 0
+        and category_id = #{blogCategoryId}
+    </select>
+
+    <update id="updateCategoryRank" parameterType="com.qyy.blog.blogfacade.entity.BlogCategory">
+        update tb_blog_category
+        <set>
+            <if test="categoryName != null">
+                category_name = #{categoryName,jdbcType=VARCHAR},
+            </if>
+            <if test="categoryIcon != null">
+                category_icon = #{categoryIcon,jdbcType=VARCHAR},
+            </if>
+            <if test="categoryRank != null">
+                category_rank = #{categoryRank,jdbcType=INTEGER},
+            </if>
+            <if test="isDeleted != null">
+                is_deleted = #{isDeleted,jdbcType=TINYINT},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+        </set>
+        where category_id = #{categoryId,jdbcType=INTEGER}
+    </update>
+
+    <insert id="saveCategory">
+        insert into tb_blog_category
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="name != null and name!=''">
+                category_name,
+            </if>
+            <if test="icon != null and icon != ''">
+                category_icon,
+            </if>
+        </trim>
+        <trim prefix="values(" suffix=")" suffixOverrides=",">
+            <if test="name != null and name!=''">
+                #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="icon != null and icon != ''">
+                #{icon,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updateCategory">
+        update tb_blog_category
+        <set>
+            <if test="name != null">
+                category_name = #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="icon != null">
+                category_icon = #{icon,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where category_id = #{id,jdbcType=INTEGER}
+    </update>
+
+    <select id="selectCategoryByName" resultMap="baseMap">
+        select
+        <include refid="base_column_list"/>
+        from tb_blog_category
+        where is_deleted = 0
+        and category_name = #{categoryName}
+    </select>
+
+    <update id="deleteBatch">
+        update tb_blog_category
+        set is_deleted=1
+        where category_id in
+        <foreach collection="array" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </update>
+</mapper>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.qyy.blog.blogservice.dao.AdminUserDao">
+
+    <resultMap id="BaseResultMap" type="com.qyy.blog.blogfacade.entity.AdminUser">
+        <id column="admin_user_id" jdbcType="INTEGER" property="adminUserId" />
+        <result column="login_user_name" jdbcType="VARCHAR" property="loginUserName" />
+        <result column="login_password" jdbcType="VARCHAR" property="loginPassword" />
+        <result column="nick_name" jdbcType="VARCHAR" property="nickName" />
+        <result column="locked" jdbcType="TINYINT" property="locked" />
+    </resultMap>
+
+    <sql id="base_column_list">
+        admin_user_id,login_user_name,login_password,nick_name,locked
+    </sql>
+
+    <select id="loginByNameAndPwd" resultMap="BaseResultMap">
+          SELECT
+          <include refid="base_column_list"/>
+          FROM  tb_admin_user
+          where 1=1 and
+          login_user_name = #{username,jdbcType=VARCHAR} and
+          login_password = #{password,jdbcType=VARCHAR} and
+          locked = '0'
+
+    </select>
+
+    <select id="getUserDetailById" parameterType="int" resultMap="BaseResultMap">
+        SELECT
+        <include refid="base_column_list"/>
+        FROM  tb_admin_user
+        where locked = '0'
+        and admin_user_id = #{loginUserId}
+    </select>
+    <update id="updateName">
+        update tb_admin_user
+        <set>
+            <if test="name!=null">
+                login_user_name = #{name},
+            </if>
+            <if test="nick != null">
+                nick_name = #{nick}
+            </if>
+        </set>
+        where admin_user_id = #{id}
+    </update>
+    <update id="updatePassword">
+        update tb_admin_user
+        set login_password = #{pwd}
+        where admin_user_id = #{id}
+    </update>
+
+
+</mapper>
